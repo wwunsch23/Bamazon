@@ -19,69 +19,57 @@ connection.connect(err => {
     getItemsForSale();
 });
 
+
 function getItemsForSale () {
-    connection.query("SELECT item_id, department_name, product_name, price FROM products",
+    connection.query("SELECT item_id, department_name, product_name,        CONCAT('$',FORMAT(price,2)) AS price FROM products",
     function(err, data) {
-            if (err) throw err;
-            console.table('\nItems For Sale',data)   
-            getItemToBuy();    
-        });
-};
-
-
-// The app should then prompt users with two messages.
-
-// The first should ask them the ID of the product they would like to buy.
-// The second message should ask how many units of the product they would like to buy.
-const questions = [
-    {
-        type:'input',
-        name:'selectedID',
-        message:"What is the ID of the item you would like to buy?",
-        validate: function(value) {
-            var valid = !isNaN(parseFloat(value));
-            return valid || 'Please enter a number';
-          },
-          filter: Number
-    },
-    {
-        type: 'input',
-        name: 'quantity',
-        message: 'How many units of that item would you like to buy?',
-        validate: function(value) {
-          var valid = !isNaN(parseFloat(value));
-          return valid || 'Please enter a number';
-        },
-        filter: Number
-      }
-];
-
-// Once the customer has placed the order, your application should check if your store has enough of the product to meet the customer's request.
-// If not, the app should log a phrase like Insufficient quantity!, and then prevent the order from going through.
-
-function getItemToBuy () {
-    inquirer.prompt(questions).then(answers => {
-        //console.log(JSON.stringify(answers, null,' '));
-        connection.query("SELECT item_id, stock_quantity FROM products WHERE ?",
-        [{'item_id':answers.selectedID}],
-        (err, data) => {
-            if (err){
+            if (err) {
                 throw err;
             };
-            if (answers.quantity > data[0].stock_quantity) {
-                console.log(`There is only ${data[0].stock_quantity} units of that product currently in stock. Please enter a different amount to buy.`)
-                getItemToBuy();
-            } else {
-                let newQuantity = data[0].stock_quantity - answers.quantity;
-                updateQuantity(answers.quantity,newQuantity,data[0].item_id);
-            };
+            console.table('\nItems For Sale',data)   
+            inquirer.prompt([
+                {
+                type: "list",
+                name: "itemToBuy",
+                message: "Select which item you would like to buy.",
+                choices: data.map(function (item) {
+                  return item.product_name;
+                })
+              },
+              {
+                type: 'input',
+                name: 'quantity',
+                message: 'How many units of that item would you like to buy?',
+                validate: function(value) {
+                  var valid = !isNaN(parseFloat(value));
+                  return valid || 'Please enter a number';
+                },
+                filter: Number
+              }
+            ])
+            .then(answers => {
+                //console.log(JSON.stringify(answers, null,' '));
+                connection.query("SELECT item_id, stock_quantity FROM products WHERE ?",
+                [{'product_name':answers.itemToBuy}],
+                (err, data) => {
+                    if (err){
+                        throw err;
+                    };
+                    if (answers.quantity > data[0].stock_quantity) {
+                        console.log(`There is only ${data[0].stock_quantity} units of that product currently in stock. Please enter a different amount to buy.`)
+                        getItemsForSale();
+                    } else {
+                        let newQuantity = data[0].stock_quantity - answers.quantity;
+                        updateQuantity(answers.quantity,newQuantity,data[0].item_id);
+                    };
+            });
         })
-    })
+    });
 };
 
-// However, if your store does have enough of the product, you should fulfill the customer's order.
-// This means updating the SQL database to reflect the remaining quantity.
-// Once the update goes through, show the customer the total cost of their purchase.
+// // However, if your store does have enough of the product, you should fulfill the customer's order.
+// // This means updating the SQL database to reflect the remaining quantity.
+// // Once the update goes through, show the customer the total cost of their purchase.
 
 function updateQuantity (buyQuantity,newQuantity,id) {
     let criteria = [];
@@ -103,6 +91,7 @@ function displayTotal(buyQuantity, id) {
         if (err) {
             throw err;
         }
-        console.log(`You purchased ${buyQuantity} units of ${data[0].product_name} for a total cost of $${data[0].Total}.`);
+        let totalPrice = data[0].Total.toFixed(2);
+        console.log(`You purchased ${buyQuantity} units of ${data[0].product_name} for a total cost of $${totalPrice}.`);
     });
 };

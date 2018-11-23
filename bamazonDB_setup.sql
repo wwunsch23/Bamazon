@@ -20,6 +20,6 @@ VALUES ("Echo Dot","Electronics",49.99,1050),
     ("The Essential Johnny Cash", "CDs & Vinyl",22.99,800),
     ("Chronicle: The 20 Greatest Hits", "CDs & Vinyl",20.63,625),
     ("Instant Pot LUX Mini", "Home & Kitchen",59.95,730),
-    ("Chuckit! Ultra Ball","Pet Supplies",7.88,436),
+    ("Chuckit! Ultra Ball","Pet Supplies",7.80,436),
     ("Vans Authentic Low-Top Sneakers","Men's Shoes",74.95,25),
     ("Air Jordan 13 Retro","Men's Shoes",171.15,25);
