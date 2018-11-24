@@ -87,7 +87,9 @@ function updateQuantity (buyQuantity,newQuantity,id) {
 function displayTotal(buyQuantity, id) {
     let totalCriteria = [];
     totalCriteria.push(buyQuantity, id);
-    connection.query("SELECT product_name, ? * price AS Total FROM products WHERE item_id = ?", totalCriteria, (err, data) => {
+    connection.query("SELECT product_name, ? * price AS Total FROM products WHERE item_id = ?", 
+    totalCriteria, 
+    (err, data) => {
         if (err) {
             throw err;
         }
